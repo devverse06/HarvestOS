@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: harvestos
+      POSTGRES_USER: harvestos
+      POSTGRES_PASSWORD: harvestos
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U harvestos -d harvestos" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgresql://harvestos:harvestos@db:5432/harvestos
+      SECRET_KEY: ${SECRET_KEY:-local-development-secret-change-me}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: http://localhost:8000/api
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:

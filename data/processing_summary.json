@@ -1,0 +1,8 @@
+{
+  "records_read": 10002,
+  "records_accepted": 10000,
+  "records_rejected": 2,
+  "duplicates_found": 1,
+  "invalid_records": 1,
+  "records_loaded": 0
+}

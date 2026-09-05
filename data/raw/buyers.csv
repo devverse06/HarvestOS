@@ -1,0 +1,101 @@
+id,company_name,country,contact_name,email,ltv,status
+BYR-0001,Buyer 0001,United States,Contact 0001,buyer0001@example.com,$0,Active
+BYR-0002,Buyer 0002,India,Contact 0002,buyer0002@example.com,$0,Active
+BYR-0003,Buyer 0003,Netherlands,Contact 0003,buyer0003@example.com,$0,Active
+BYR-0004,Buyer 0004,United States,Contact 0004,buyer0004@example.com,$0,Active
+BYR-0005,Buyer 0005,United States,Contact 0005,buyer0005@example.com,$0,Active
+BYR-0006,Buyer 0006,India,Contact 0006,buyer0006@example.com,$0,Active
+BYR-0007,Buyer 0007,United States,Contact 0007,buyer0007@example.com,$0,Active
+BYR-0008,Buyer 0008,United States,Contact 0008,buyer0008@example.com,$0,Active
+BYR-0009,Buyer 0009,India,Contact 0009,buyer0009@example.com,$0,Active
+BYR-0010,Buyer 0010,UAE,Contact 0010,buyer0010@example.com,$0,Active
+BYR-0011,Buyer 0011,UAE,Contact 0011,buyer0011@example.com,$0,Active
+BYR-0012,Buyer 0012,United States,Contact 0012,buyer0012@example.com,$0,Active
+BYR-0013,Buyer 0013,United States,Contact 0013,buyer0013@example.com,$0,Active
+BYR-0014,Buyer 0014,Netherlands,Contact 0014,buyer0014@example.com,$0,Active
+BYR-0015,Buyer 0015,United States,Contact 0015,buyer0015@example.com,$0,Active
+BYR-0016,Buyer 0016,Netherlands,Contact 0016,buyer0016@example.com,$0,Active
+BYR-0017,Buyer 0017,UAE,Contact 0017,buyer0017@example.com,$0,Active
+BYR-0018,Buyer 0018,United States,Contact 0018,buyer0018@example.com,$0,Active
+BYR-0019,Buyer 0019,United States,Contact 0019,buyer0019@example.com,$0,Active
+BYR-0020,Buyer 0020,India,Contact 0020,buyer0020@example.com,$0,Active
+BYR-0021,Buyer 0021,United States,Contact 0021,buyer0021@example.com,$0,Active
+BYR-0022,Buyer 0022,UAE,Contact 0022,buyer0022@example.com,$0,Active
+BYR-0023,Buyer 0023,United States,Contact 0023,buyer0023@example.com,$0,Active
+BYR-0024,Buyer 0024,Netherlands,Contact 0024,buyer0024@example.com,$0,Active
+BYR-0025,Buyer 0025,United States,Contact 0025,buyer0025@example.com,$0,Active
+BYR-0026,Buyer 0026,Netherlands,Contact 0026,buyer0026@example.com,$0,Active
+BYR-0027,Buyer 0027,India,Contact 0027,buyer0027@example.com,$0,Active
+BYR-0028,Buyer 0028,United States,Contact 0028,buyer0028@example.com,$0,Active
+BYR-0029,Buyer 0029,India,Contact 0029,buyer0029@example.com,$0,Active
+BYR-0030,Buyer 0030,India,Contact 0030,buyer0030@example.com,$0,Active
+BYR-0031,Buyer 0031,United States,Contact 0031,buyer0031@example.com,$0,Active
+BYR-0032,Buyer 0032,Netherlands,Contact 0032,buyer0032@example.com,$0,Active
+BYR-0033,Buyer 0033,United States,Contact 0033,buyer0033@example.com,$0,Active
+BYR-0034,Buyer 0034,Netherlands,Contact 0034,buyer0034@example.com,$0,Active
+BYR-0035,Buyer 0035,India,Contact 0035,buyer0035@example.com,$0,Active
+BYR-0036,Buyer 0036,UAE,Contact 0036,buyer0036@example.com,$0,Active
+BYR-0037,Buyer 0037,United States,Contact 0037,buyer0037@example.com,$0,Active
+BYR-0038,Buyer 0038,UAE,Contact 0038,buyer0038@example.com,$0,Active
+BYR-0039,Buyer 0039,Netherlands,Contact 0039,buyer0039@example.com,$0,Active
+BYR-0040,Buyer 0040,United States,Contact 0040,buyer0040@example.com,$0,Active
+BYR-0041,Buyer 0041,UAE,Contact 0041,buyer0041@example.com,$0,Active
+BYR-0042,Buyer 0042,UAE,Contact 0042,buyer0042@example.com,$0,Active
+BYR-0043,Buyer 0043,United States,Contact 0043,buyer0043@example.com,$0,Active
+BYR-0044,Buyer 0044,UAE,Contact 0044,buyer0044@example.com,$0,Active
+BYR-0045,Buyer 0045,United States,Contact 0045,buyer0045@example.com,$0,Active
+BYR-0046,Buyer 0046,UAE,Contact 0046,buyer0046@example.com,$0,Active
+BYR-0047,Buyer 0047,India,Contact 0047,buyer0047@example.com,$0,Active
+BYR-0048,Buyer 0048,United States,Contact 0048,buyer0048@example.com,$0,Active
+BYR-0049,Buyer 0049,India,Contact 0049,buyer0049@example.com,$0,Active
+BYR-0050,Buyer 0050,India,Contact 0050,buyer0050@example.com,$0,Active
+BYR-0051,Buyer 0051,UAE,Contact 0051,buyer0051@example.com,$0,Active
+BYR-0052,Buyer 0052,Netherlands,Contact 0052,buyer0052@example.com,$0,Active
+BYR-0053,Buyer 0053,India,Contact 0053,buyer0053@example.com,$0,Active
+BYR-0054,Buyer 0054,India,Contact 0054,buyer0054@example.com,$0,Active
+BYR-0055,Buyer 0055,India,Contact 0055,buyer0055@example.com,$0,Active
+BYR-0056,Buyer 0056,Netherlands,Contact 0056,buyer0056@example.com,$0,Active
+BYR-0057,Buyer 0057,Netherlands,Contact 0057,buyer0057@example.com,$0,Active
+BYR-0058,Buyer 0058,India,Contact 0058,buyer0058@example.com,$0,Active
+BYR-0059,Buyer 0059,Netherlands,Contact 0059,buyer0059@example.com,$0,Active
+BYR-0060,Buyer 0060,Netherlands,Contact 0060,buyer0060@example.com,$0,Active
+BYR-0061,Buyer 0061,Netherlands,Contact 0061,buyer0061@example.com,$0,Active
+BYR-0062,Buyer 0062,United States,Contact 0062,buyer0062@example.com,$0,Active
+BYR-0063,Buyer 0063,India,Contact 0063,buyer0063@example.com,$0,Active
+BYR-0064,Buyer 0064,Netherlands,Contact 0064,buyer0064@example.com,$0,Active
+BYR-0065,Buyer 0065,United States,Contact 0065,buyer0065@example.com,$0,Active
+BYR-0066,Buyer 0066,UAE,Contact 0066,buyer0066@example.com,$0,Active
+BYR-0067,Buyer 0067,UAE,Contact 0067,buyer0067@example.com,$0,Active
+BYR-0068,Buyer 0068,Netherlands,Contact 0068,buyer0068@example.com,$0,Active
+BYR-0069,Buyer 0069,India,Contact 0069,buyer0069@example.com,$0,Active
+BYR-0070,Buyer 0070,Netherlands,Contact 0070,buyer0070@example.com,$0,Active
+BYR-0071,Buyer 0071,UAE,Contact 0071,buyer0071@example.com,$0,Active
+BYR-0072,Buyer 0072,India,Contact 0072,buyer0072@example.com,$0,Active
+BYR-0073,Buyer 0073,India,Contact 0073,buyer0073@example.com,$0,Active
+BYR-0074,Buyer 0074,UAE,Contact 0074,buyer0074@example.com,$0,Active
+BYR-0075,Buyer 0075,United States,Contact 0075,buyer0075@example.com,$0,Active
+BYR-0076,Buyer 0076,United States,Contact 0076,buyer0076@example.com,$0,Active
+BYR-0077,Buyer 0077,Netherlands,Contact 0077,buyer0077@example.com,$0,Active
+BYR-0078,Buyer 0078,India,Contact 0078,buyer0078@example.com,$0,Active
+BYR-0079,Buyer 0079,Netherlands,Contact 0079,buyer0079@example.com,$0,Active
+BYR-0080,Buyer 0080,India,Contact 0080,buyer0080@example.com,$0,Active
+BYR-0081,Buyer 0081,UAE,Contact 0081,buyer0081@example.com,$0,Active
+BYR-0082,Buyer 0082,India,Contact 0082,buyer0082@example.com,$0,Active
+BYR-0083,Buyer 0083,India,Contact 0083,buyer0083@example.com,$0,Active
+BYR-0084,Buyer 0084,UAE,Contact 0084,buyer0084@example.com,$0,Active
+BYR-0085,Buyer 0085,United States,Contact 0085,buyer0085@example.com,$0,Active
+BYR-0086,Buyer 0086,UAE,Contact 0086,buyer0086@example.com,$0,Active
+BYR-0087,Buyer 0087,India,Contact 0087,buyer0087@example.com,$0,Active
+BYR-0088,Buyer 0088,UAE,Contact 0088,buyer0088@example.com,$0,Active
+BYR-0089,Buyer 0089,India,Contact 0089,buyer0089@example.com,$0,Active
+BYR-0090,Buyer 0090,United States,Contact 0090,buyer0090@example.com,$0,Active
+BYR-0091,Buyer 0091,United States,Contact 0091,buyer0091@example.com,$0,Active
+BYR-0092,Buyer 0092,India,Contact 0092,buyer0092@example.com,$0,Active
+BYR-0093,Buyer 0093,United States,Contact 0093,buyer0093@example.com,$0,Active
+BYR-0094,Buyer 0094,UAE,Contact 0094,buyer0094@example.com,$0,Active
+BYR-0095,Buyer 0095,United States,Contact 0095,buyer0095@example.com,$0,Active
+BYR-0096,Buyer 0096,Netherlands,Contact 0096,buyer0096@example.com,$0,Active
+BYR-0097,Buyer 0097,United States,Contact 0097,buyer0097@example.com,$0,Active
+BYR-0098,Buyer 0098,Netherlands,Contact 0098,buyer0098@example.com,$0,Active
+BYR-0099,Buyer 0099,UAE,Contact 0099,buyer0099@example.com,$0,Active
+BYR-0100,Buyer 0100,United States,Contact 0100,buyer0100@example.com,$0,Active

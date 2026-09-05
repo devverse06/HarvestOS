@@ -1,0 +1,596 @@
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, Html, Line, Box, Cylinder, Environment, ContactShadows } from '@react-three/drei';
+import * as THREE from 'three';
+import { MapPin, Thermometer, Anchor, Calendar, FileText, CheckCircle2, Search, Loader2, Ship as ShipIcon, FastForward } from 'lucide-react';
+import { getShipments, advanceShipment } from '../services/api';
+
+// --- Custom 3D Shapes ---
+
+function WarehouseShape({ color, isActive }: { color: string, isActive: boolean }) {
+  return (
+    <group position={[0, 0, 0]}>
+      {/* Main Building */}
+      <Box args={[2, 1.2, 1.5]} position={[0, 0.6, 0]}>
+        <meshStandardMaterial color={isActive ? '#3B82F6' : '#64748B'} />
+      </Box>
+      {/* Sloped Roof */}
+      <mesh position={[0, 1.5, 0]} rotation={[0, 0, 0]}>
+        <cylinderGeometry args={[1.06, 1.06, 2, 3]} />
+        <meshStandardMaterial color={isActive ? '#1E40AF' : '#475569'} />
+      </mesh>
+      {/* Door */}
+      <Box args={[0.6, 0.6, 1.51]} position={[0, 0.3, 0]}>
+        <meshStandardMaterial color="#1E293B" />
+      </Box>
+      <ContactShadows position={[0, 0.01, 0]} opacity={0.6} scale={4} blur={1.5} far={2} />
+    </group>
+  );
+}
+
+function CargoShipShape({ color, isActive }: { color: string, isActive: boolean }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const wakeRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      const t = state.clock.elapsedTime;
+      // Bobbing and rocking synced roughly with ocean waves
+      groupRef.current.position.y = Math.sin(t * 2.0) * 0.1;
+      groupRef.current.rotation.z = Math.sin(t * 1.5) * 0.05;
+      groupRef.current.rotation.x = Math.cos(t * 1.8) * 0.03;
+    }
+    if (isActive && wakeRef.current) {
+      const t = state.clock.elapsedTime;
+      wakeRef.current.scale.y = 1 + Math.sin(t * 5) * 0.2;
+      wakeRef.current.scale.x = 1 + Math.sin(t * 3) * 0.1;
+    }
+  });
+
+  return (
+    <group position={[0, 0, 0]}>
+      <group ref={groupRef} position={[0, 0, 0]}>
+        {/* Hull */}
+        <mesh position={[0, 0.4, 0]}>
+          <boxGeometry args={[3.2, 0.8, 1.2]} />
+          <meshStandardMaterial color={isActive ? '#1E5EFF' : '#334155'} />
+        </mesh>
+        {/* Bow (Tapered front) */}
+        <mesh position={[1.6, 0.4, 0]} rotation={[0, 0, -Math.PI / 2]}>
+          <cylinderGeometry args={[0.6, 0.6, 0.8, 3]} />
+          <meshStandardMaterial color={isActive ? '#1E5EFF' : '#334155'} />
+        </mesh>
+        
+        {/* Bridge */}
+        <Box args={[0.8, 1.0, 1.0]} position={[-1.0, 1.0, 0]}>
+          <meshStandardMaterial color="#FFFFFF" />
+        </Box>
+        {/* Funnel */}
+        <Cylinder args={[0.15, 0.15, 0.6]} position={[-1.2, 1.6, 0]}>
+          <meshStandardMaterial color="#EF4444" />
+        </Cylinder>
+
+        {/* Containers */}
+        {/* Stack 1 */}
+        <Box args={[0.8, 0.5, 1.0]} position={[0.2, 1.05, 0]}>
+          <meshStandardMaterial color="#EF4444" />
+        </Box>
+        <Box args={[0.8, 0.5, 1.0]} position={[0.2, 1.55, 0]}>
+          <meshStandardMaterial color="#3B82F6" />
+        </Box>
+        {/* Stack 2 */}
+        <Box args={[0.8, 0.5, 1.0]} position={[1.1, 1.05, 0]}>
+          <meshStandardMaterial color="#F59E0B" />
+        </Box>
+      </group>
+      
+      {/* Wake Effect */}
+      {isActive && (
+        <mesh ref={wakeRef} position={[-2.5, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[3, 1.5]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.3} depthWrite={false} />
+        </mesh>
+      )}
+      
+      <ContactShadows position={[0, 0.01, 0]} opacity={0.7} scale={6} blur={2} far={2} />
+    </group>
+  );
+}
+
+function PortShape({ color, isActive }: { color: string, isActive: boolean }) {
+  return (
+    <group position={[0, 0, 0]}>
+      {/* Dock Platform */}
+      <Box args={[3, 0.2, 2]} position={[0, 0.1, 0]}>
+        <meshStandardMaterial color="#94A3B8" />
+      </Box>
+      
+      {/* Crane */}
+      <group position={[0, 0.2, -0.5]}>
+        {/* Legs */}
+        <Box args={[0.2, 2, 0.2]} position={[-0.8, 1, 0]}>
+          <meshStandardMaterial color="#F59E0B" />
+        </Box>
+        <Box args={[0.2, 2, 0.2]} position={[0.8, 1, 0]}>
+          <meshStandardMaterial color="#F59E0B" />
+        </Box>
+        {/* Top Beam */}
+        <Box args={[2.4, 0.2, 0.2]} position={[0, 2.1, 0.3]}>
+          <meshStandardMaterial color="#F59E0B" />
+        </Box>
+        {/* Cabin */}
+        <Box args={[0.4, 0.4, 0.4]} position={[0.5, 1.8, 0.3]}>
+          <meshStandardMaterial color="#1E293B" />
+        </Box>
+      </group>
+
+      {/* Containers on dock */}
+      <Box args={[0.8, 0.4, 0.4]} position={[-1, 0.4, 0.5]}>
+        <meshStandardMaterial color="#EF4444" />
+      </Box>
+      <Box args={[0.8, 0.4, 0.4]} position={[-1, 0.8, 0.5]}>
+        <meshStandardMaterial color="#3B82F6" />
+      </Box>
+
+      <ContactShadows position={[0, 0.01, 0]} opacity={0.6} scale={5} blur={1.5} far={2} />
+    </group>
+  );
+}
+
+function FarmShape({ color, isActive }: { color: string, isActive: boolean }) {
+  return (
+    <group position={[0, 0, 0]}>
+      {/* Silo */}
+      <Cylinder args={[0.8, 0.8, 2, 16]} position={[-0.5, 1, -0.5]}>
+        <meshStandardMaterial color={isActive ? '#3B82F6' : '#94A3B8'} />
+      </Cylinder>
+      <Cylinder args={[0, 0.9, 0.8, 16]} position={[-0.5, 2.4, -0.5]}>
+        <meshStandardMaterial color={isActive ? '#1E40AF' : '#64748B'} />
+      </Cylinder>
+      {/* Barn */}
+      <Box args={[1.5, 1, 1.5]} position={[0.8, 0.5, 0.5]}>
+        <meshStandardMaterial color="#DC2626" />
+      </Box>
+      {/* Roof */}
+      <mesh position={[0.8, 1.25, 0.5]} rotation={[0, 0, 0]}>
+        <cylinderGeometry args={[1.06, 1.06, 1.5, 3]} />
+        <meshStandardMaterial color="#7F1D1D" />
+      </mesh>
+      
+      <ContactShadows position={[0, 0.01, 0]} opacity={0.5} scale={4} blur={1.5} far={2} />
+    </group>
+  );
+}
+
+// --- Shader Ocean ---
+
+function OceanSurface() {
+  const customUniforms = useMemo(() => ({
+    uTime: { value: 0 }
+  }), []);
+
+  useFrame((state) => {
+    customUniforms.uTime.value = state.clock.elapsedTime;
+  });
+
+  const onBeforeCompile = (shader: any) => {
+    shader.uniforms.uTime = customUniforms.uTime;
+    shader.vertexShader = `
+      uniform float uTime;
+      ${shader.vertexShader}
+    `;
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `
+      #include <begin_vertex>
+      float wave = sin(position.x * 0.5 + uTime) * cos(position.y * 0.5 + uTime) * 0.2;
+      wave += sin(position.x * 1.5 - uTime * 1.5) * 0.1;
+      transformed.z += wave;
+      `
+    );
+  };
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.2, 0]}>
+      {/* High segment count for vertex displacement */}
+      <planeGeometry args={[200, 200, 128, 128]} />
+      <meshStandardMaterial 
+        color="#0284c7" 
+        metalness={0.9} 
+        roughness={0.1}
+        onBeforeCompile={onBeforeCompile}
+        flatShading={true} // Triggers correct normal calculation for displaced vertices in fragment shader
+      />
+    </mesh>
+  );
+}
+
+// --- Main Node Component ---
+
+function SupplyChainNode({ position, nodeData, isActive, delay = 0 }: any) {
+  const color = isActive ? '#1E5EFF' : (nodeData.status === 'completed' ? '#1F5E3B' : '#CBD5E1');
+
+  const renderShape = () => {
+    switch (nodeData.type) {
+      case 'farm': return <FarmShape color={color} isActive={isActive} />;
+      case 'warehouse': return <WarehouseShape color={color} isActive={isActive} />;
+      case 'port': return <PortShape color={color} isActive={isActive} />;
+      case 'ship': return <CargoShipShape color={color} isActive={isActive} />;
+      default: return <WarehouseShape color={color} isActive={isActive} />;
+    }
+  };
+
+  return (
+    <group position={position}>
+      {renderShape()}
+      
+      <Html position={[0, 2.5, 0]} center zIndexRange={[100, 0]}>
+        <motion.div 
+          initial={{ opacity: 0, y: 10, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: isActive ? 1 : 0.9 }}
+          transition={{ delay: delay * 0.1 }}
+          className={`rounded-lg shadow-lg border transition-all duration-300 w-64 ${
+            isActive 
+              ? 'bg-white border-blue-500 shadow-blue-500/20 ring-1 ring-blue-500' 
+              : 'bg-white/90 backdrop-blur-md border-slate-200'
+          }`}
+        >
+          <div className={`px-3 py-2 border-b flex items-center justify-between ${isActive ? 'bg-blue-50/50 border-blue-100' : 'border-slate-100'}`}>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-800">{nodeData.title}</span>
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+              nodeData.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
+              nodeData.status === 'active' ? 'bg-blue-100 text-blue-700 animate-pulse' : 
+              'bg-slate-100 text-slate-500'
+            }`}>
+              {nodeData.status.toUpperCase()}
+            </span>
+          </div>
+          
+          <div className="p-3 flex flex-col gap-2">
+            {nodeData.details.map((detail: any, idx: number) => (
+              <div key={idx} className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <detail.icon size={12} />
+                  <span>{detail.label}</span>
+                </div>
+                <span className="font-medium text-slate-700">{detail.value}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </Html>
+    </group>
+  );
+}
+
+// --- The 3D Scene ---
+
+function SupplyChainScene({ selectedShipment }: { selectedShipment: any }) {
+  if (!selectedShipment) return null;
+
+  const nodes = [
+    { 
+      type: 'farm', title: 'Origin Farm', pos: [-12, 0, -2], status: 'completed',
+      details: [
+        { label: 'Farm', value: 'Wade Banana Farm', icon: MapPin },
+        { label: 'Harvest Vol', value: '24.0 Tons', icon: FileText },
+        { label: 'Date', value: 'Oct 20, 2026', icon: Calendar }
+      ]
+    },
+    { 
+      type: 'warehouse', title: 'Packhouse Quality', pos: [-6, 0, 1], status: 'completed',
+      details: [
+        { label: 'Facility', value: 'Pune Cold Storage', icon: MapPin },
+        { label: 'Grade', value: 'Grade A (Export)', icon: CheckCircle2 },
+        { label: 'Temp Log', value: '2.0°C - 2.5°C', icon: Thermometer }
+      ]
+    },
+    { 
+      type: 'ship', title: 'Ocean Freight', pos: [0, 0, -1], status: selectedShipment.status === 'Planned' ? 'pending' : 'active',
+      details: [
+        { label: 'Vessel', value: 'MSC Isabella', icon: Anchor },
+        { label: 'Speed', value: '18.4 Knots', icon: MapPin },
+        { label: 'Reefer Temp', value: selectedShipment.internal_temp ? `${selectedShipment.internal_temp}°C` : 'N/A', icon: Thermometer }
+      ]
+    },
+    { 
+      type: 'port', title: 'Destination Port', pos: [6, 0, 0], status: 'pending',
+      details: [
+        { label: 'Location', value: 'Rotterdam (RTM)', icon: MapPin },
+        { label: 'Customs', value: 'Awaiting Doc', icon: FileText },
+        { label: 'ETA', value: selectedShipment.eta ? new Date(selectedShipment.eta).toLocaleDateString() : 'TBD', icon: Calendar }
+      ]
+    },
+    { 
+      type: 'warehouse', title: 'Buyer Hub', pos: [12, 0, -1.5], status: 'pending',
+      details: [
+        { label: 'Buyer', value: selectedShipment.buyer_id, icon: MapPin },
+        { label: 'Contract', value: 'EUR-2026-88', icon: FileText }
+      ]
+    },
+  ];
+
+  const linePoints = nodes.map(n => new THREE.Vector3(...(n.pos as [number, number, number])));
+
+  return (
+    <>
+      <color attach="background" args={['#e0f2fe']} />
+      <fog attach="fog" args={['#e0f2fe', 10, 50]} />
+      
+      <Environment preset="city" />
+      <ambientLight intensity={0.2} />
+      <directionalLight position={[10, 20, 10]} intensity={1.0} />
+      
+      <OceanSurface />
+      
+      <Line points={linePoints} color="#F8FAFC" lineWidth={3} dashed dashScale={10} dashSize={1} gapSize={1} position={[0, 0.1, 0]} />
+      
+      {nodes.map((node, i) => (
+        <SupplyChainNode 
+          key={i} 
+          position={node.pos} 
+          nodeData={node}
+          isActive={node.status === 'active'}
+          delay={i}
+        />
+      ))}
+
+      <OrbitControls 
+        enableDamping={true}
+        dampingFactor={0.05}
+        enablePan={true} 
+        enableZoom={true} 
+        minDistance={5} 
+        maxDistance={35}
+        minPolarAngle={Math.PI / 6}
+        maxPolarAngle={Math.PI / 2 - 0.05} 
+        target={[0, 0, 0]}
+      />
+    </>
+  );
+}
+
+// --- Main Page Component ---
+
+export default function ShipmentsTracker() {
+  const [shipments, setShipments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadShipments = async () => {
+      try {
+        setLoading(true);
+        const data = await getShipments();
+        setShipments(data);
+        if (data.length > 0) {
+          setSelectedShipmentId(data[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load shipments", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadShipments();
+  }, []);
+
+  const filteredShipments = shipments.filter(s => 
+    s.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    s.buyer_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.container_number.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const activeShipment = shipments.find(s => s.id === selectedShipmentId);
+
+  const handleAdvance = async () => {
+    if (!activeShipment) return;
+    try {
+      await advanceShipment(activeShipment.id);
+      // Reload shipments to get the new status
+      const data = await getShipments();
+      setShipments(data);
+    } catch (error) {
+      console.error("Failed to advance shipment", error);
+    }
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex-1 flex h-full absolute inset-0 bg-[#F8FAFC]"
+    >
+      
+      {/* Left Sidebar: Shipment List */}
+      <div className="w-[300px] h-full bg-white border-r border-slate-200 shadow-sm z-20 flex flex-col shrink-0">
+        <div className="p-4 border-b border-slate-100">
+          <h2 className="text-lg font-semibold text-slate-900 mb-3">Active Shipments</h2>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <input 
+              type="text" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search ID, Container..." 
+              className="pl-8 pr-4 py-2 border border-slate-300 rounded-md text-[12px] w-full focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-slate-400 bg-slate-50"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          {loading ? (
+             <div className="flex flex-col items-center justify-center h-32 text-slate-400 gap-2">
+               <Loader2 className="animate-spin" size={20} />
+               <span className="text-[12px]">Loading shipments...</span>
+             </div>
+          ) : filteredShipments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-slate-500 gap-2 p-4 text-center">
+               <ShipIcon size={24} className="text-slate-300" />
+               <span className="text-[12px]">No shipments found. Create one from the Dashboard!</span>
+             </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {filteredShipments.map(shipment => (
+                <button
+                  key={shipment.id}
+                  onClick={() => setSelectedShipmentId(shipment.id)}
+                  className={`w-full text-left p-4 hover:bg-slate-50 transition-colors ${selectedShipmentId === shipment.id ? 'bg-blue-50/50 border-l-2 border-blue-500' : 'border-l-2 border-transparent'}`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-slate-900 text-[13px]">{shipment.id}</span>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${shipment.status === 'Planned' ? 'bg-slate-100 text-slate-600' : 'bg-blue-100 text-blue-700'}`}>
+                      {shipment.status}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1 flex flex-col gap-0.5">
+                    <span>Buyer: {shipment.buyer_id}</span>
+                    <span className="font-mono">Cnt: {shipment.container_number}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 3D Canvas Area */}
+      <div className="flex-1 h-full relative cursor-grab active:cursor-grabbing">
+        {activeShipment ? (
+          <Canvas camera={{ position: [0, 8, 20], fov: 40 }}>
+            <SupplyChainScene selectedShipment={activeShipment} />
+          </Canvas>
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-slate-400">
+            <p>Select a shipment from the list to view telemetry.</p>
+          </div>
+        )}
+
+        {/* Floating Controls Hint */}
+        {activeShipment && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-white/90 backdrop-blur-sm px-5 py-2.5 rounded-full border border-slate-200 shadow-sm text-[11px] font-medium text-slate-500 flex items-center gap-5 pointer-events-none">
+            <span className="flex items-center gap-1.5"><kbd className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">Left Click</kbd> Orbit</span>
+            <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+            <span className="flex items-center gap-1.5"><kbd className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">Right Click</kbd> Pan</span>
+            <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+            <span className="flex items-center gap-1.5"><kbd className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">Scroll</kbd> Zoom</span>
+          </div>
+        )}
+      </div>
+
+      {/* Persistent Right Sidebar overlaying the 3D scene */}
+      {activeShipment && (
+        <div className="w-[320px] h-full bg-white border-l border-slate-200 shadow-xl z-20 flex flex-col shrink-0">
+          <div className="p-5 border-b border-slate-100">
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase flex items-center gap-1 ${activeShipment.status === 'Planned' ? 'bg-slate-100 text-slate-600' : 'bg-blue-100 text-blue-700'}`}>
+                {activeShipment.status === 'Planned' ? null : <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>}
+                {activeShipment.status}
+              </span>
+              <span className="text-[11px] font-medium text-slate-500">
+                {activeShipment.status === 'Planned' ? 'Awaiting Dispatch' : 'Day 14 of 28'}
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-slate-900 mb-1">Shipment #{activeShipment.id}</h2>
+            <p className="text-[13px] text-slate-500 leading-relaxed">
+              {activeShipment.status === 'Planned' ? 'Container packed and awaiting manifest clearance.' : 'Navigating the Atlantic Ocean. Expected to reach Port of Rotterdam on Nov 02.'}
+            </p>
+          </div>
+
+          {/* Key Metrics */}
+          <div className="p-5 grid grid-cols-2 gap-4 border-b border-slate-100 bg-slate-50">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Internal Temp</p>
+              <p className="text-lg font-semibold text-emerald-600">
+                {activeShipment.internal_temp ? `${activeShipment.internal_temp}°C` : 'N/A'} 
+                {activeShipment.internal_temp && <span className="text-[11px] text-slate-400 font-medium ml-1">Stable</span>}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Container</p>
+              <p className="text-sm font-mono font-medium text-slate-800 mt-1">{activeShipment.container_number}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Product Manifest</p>
+              <p className="text-[13px] font-medium text-slate-800">24.0 Tons — Ready for Export</p>
+            </div>
+          </div>
+
+          {/* Timeline Log */}
+          <div className="flex-1 overflow-auto p-5">
+            <h3 className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider mb-4">Event Log</h3>
+            
+            <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[9px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+              
+              {(() => {
+                const events = [];
+
+                if (activeShipment.status === 'Delivered') {
+                  events.push(
+                    { title: 'Delivered to Buyer', detail: `Cargo received by ${activeShipment.buyer_id}. Release signed.`, time: '2 days ago', active: true, color: 'emerald' },
+                    { title: 'Customs Cleared', detail: 'All documents verified. Phytosanitary cert accepted.', time: '3 days ago', active: false, color: 'slate' },
+                    { title: 'Arrived at Port', detail: 'Vessel docked at Rotterdam (RTM). Unloading scheduled.', time: '4 days ago', active: false, color: 'slate' },
+                    { title: 'Departed Origin', detail: 'Container sealed and loaded. Manifest logged.', time: '18 days ago', active: false, color: 'slate' },
+                  );
+                } else if (activeShipment.status === 'In Transit') {
+                  events.push(
+                    { title: 'In Transit — Atlantic', detail: `Reefer temp holding at ${activeShipment.internal_temp ?? '—'}°C. On schedule.`, time: 'Now', active: true, color: 'blue' },
+                    { title: 'Passed Suez Canal', detail: 'Vessel cleared canal transit. No delays reported.', time: '5 days ago', active: false, color: 'slate' },
+                    { title: 'Departed Origin Port', detail: 'Container sealed and loaded onto vessel.', time: '14 days ago', active: false, color: 'slate' },
+                  );
+                } else {
+                  events.push(
+                    { title: 'Container Packed', detail: 'Manifest logged. Awaiting dispatch clearance.', time: 'Just now', active: true, color: 'blue' },
+                    { title: 'Quality Inspection Passed', detail: 'Grade A — cleared for export.', time: '1 hour ago', active: false, color: 'slate' },
+                  );
+                }
+
+                return events.map((evt, idx) => (
+                  <div key={idx} className="relative flex items-start group">
+                    <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 border-white shadow shrink-0 z-10 ${
+                      evt.active ? `bg-${evt.color}-500 animate-pulse` : 'bg-slate-300'
+                    }`}></div>
+                    <div className={`ml-4 p-3 rounded border shadow-sm w-full ${
+                      evt.active ? `bg-${evt.color}-50 border-${evt.color}-100` : 'bg-white border-slate-100'
+                    }`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-slate-900 text-[12px]">{evt.title}</span>
+                        <span className="text-[10px] text-slate-500 font-medium">{evt.time}</span>
+                      </div>
+                      <div className="text-slate-600 text-[11px] leading-relaxed">{evt.detail}</div>
+                    </div>
+                  </div>
+                ));
+              })()}
+
+            </div>
+          </div>
+
+          <div className="p-5 border-t border-slate-100 bg-white flex flex-col gap-2">
+            {activeShipment.status !== 'Delivered' && (
+              <button 
+                onClick={handleAdvance}
+                className="w-full text-[13px] font-medium text-white bg-blue-600 px-3 py-2.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
+                <FastForward size={16} />
+                Simulate Progress (Update Status)
+              </button>
+            )}
+            <button 
+              onClick={() => window.location.href = '/export-doc'}
+              className="w-full text-[13px] font-medium text-slate-700 bg-white border border-slate-300 px-3 py-2.5 rounded-md hover:bg-slate-50 transition-colors shadow-sm flex items-center justify-center gap-2"
+            >
+              <FileText size={16} />
+              Access Export Documents
+            </button>
+          </div>
+        </div>
+      )}
+      
+    </motion.div>
+  );
+}
